@@ -134,7 +134,7 @@ async function handleNewProject(e) {
         name: name,
         description: description,
         tasks: { pending: 0, inProgress: 0, completed: 0 },
-        createdBy: user.username,
+        created_by: user.username,
         created_at: new Date().toISOString()
     };
 

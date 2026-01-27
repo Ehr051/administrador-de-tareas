@@ -1,6 +1,5 @@
 [build]
-  base = "task-manager"
-  publish = "."
+  publish = "task-manager"
 
 [functions]
   node_bundler = "esbuild"

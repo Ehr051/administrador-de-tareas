@@ -73,12 +73,32 @@ async function loadProjectAndTasks(projectId) {
 
         // Actualizar UI
         document.getElementById('projectTitle').textContent = currentProject?.name || 'Proyecto';
-        renderTasks();
 
+        // Mostrar Repo URL
+        const repoContainer = document.getElementById('repoContainer');
+        if (currentProject?.repo_url) {
+            repoContainer.style.display = 'flex';
+            document.getElementById('repoUrlText').textContent = currentProject.repo_url;
+        } else {
+            repoContainer.style.display = 'none';
+        }
+
+        renderTasks();
     } catch (error) {
         console.error('Error loading project:', error);
         document.getElementById('projectTitle').textContent = 'Error al cargar';
     }
+}
+
+function copyCloneCommand() {
+    if (!currentProject || !currentProject.repo_url) return;
+    const command = `git clone ${currentProject.repo_url}`;
+    navigator.clipboard.writeText(command).then(() => {
+        const btn = document.querySelector('.btn-copy-repo');
+        const originalText = btn.textContent;
+        btn.textContent = '✅ Copiado';
+        setTimeout(() => btn.textContent = originalText, 2000);
+    });
 }
 
 function getDefaultTasks() {
@@ -212,16 +232,55 @@ async function updateTaskStatus(taskId, newStatus) {
 }
 
 // ===== Task CRUD =====
-function openTaskModal(status = 'pending') {
+async function openTaskModal(status = 'pending') {
     document.getElementById('taskModalTitle').textContent = 'Nueva Tarea';
     document.getElementById('taskForm').reset();
     document.getElementById('taskId').value = '';
     document.getElementById('taskStatus').value = status;
+
+    await loadProjectMembers();
+
     document.getElementById('taskModal').classList.add('show');
     document.getElementById('taskTitle').focus();
 }
 
-function editTask(taskId) {
+async function loadProjectMembers() {
+    const listContainer = document.getElementById('assigneesList');
+    listContainer.innerHTML = 'Cargando usuarios...';
+
+    try {
+        let members = [];
+        if (isSupabaseConfigured() && supabaseClient) {
+            // Obtener miembros del proyecto
+            const { data, error } = await supabaseClient
+                .from('project_members')
+                .select('username')
+                .eq('project_id', currentProject?.id);
+
+            if (error) throw error;
+            members = data.map(m => m.username);
+
+            // Siempre incluir al admin y al creador por si acaso
+            if (!members.includes('EHR051')) members.push('EHR051');
+            if (!members.includes('FGR143')) members.push('FGR143');
+
+        } else {
+            members = ['EHR051', 'FGR134']; // Fallback
+        }
+
+        listContainer.innerHTML = members.map(username => `
+            <label class="checkbox-item">
+                <input type="checkbox" name="assigned_to" value="${username}">
+                <span>${username}</span>
+            </label>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading members:', error);
+        listContainer.innerHTML = 'Error al cargar miembros.';
+    }
+}
+
+async function editTask(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
 
@@ -232,6 +291,16 @@ function editTask(taskId) {
     document.getElementById('taskNotes').value = task.notes || '';
     document.getElementById('taskPriority').value = task.priority || 'media';
     document.getElementById('taskTags').value = (task.tags || []).join(', ');
+
+    await loadProjectMembers();
+
+    // Marcar los ya asignados
+    const checkboxes = document.querySelectorAll('input[name="assigned_to"]');
+    const assigned = task.assigned_to || [];
+    checkboxes.forEach(cb => {
+        if (assigned.includes(cb.value)) cb.checked = true;
+    });
+
     document.getElementById('taskModal').classList.add('show');
 }
 
@@ -243,13 +312,18 @@ async function handleTaskSubmit(e) {
     e.preventDefault();
 
     const taskId = document.getElementById('taskId').value;
+
+    // Obtener asignados
+    const assignedTo = Array.from(document.querySelectorAll('input[name="assigned_to"]:checked'))
+        .map(cb => cb.value);
+
     const taskData = {
         title: document.getElementById('taskTitle').value.trim(),
         status: document.getElementById('taskStatus').value,
         notes: document.getElementById('taskNotes').value.trim(),
         priority: document.getElementById('taskPriority').value,
         tags: document.getElementById('taskTags').value.split(',').map(t => t.trim()).filter(t => t),
-        assigned_to: []
+        assigned_to: assignedTo
     };
 
     try {

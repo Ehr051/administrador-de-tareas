@@ -133,12 +133,14 @@ async function handleNewProject(e) {
 
     const name = document.getElementById('projectName').value.trim();
     const description = document.getElementById('projectDesc').value.trim();
+    const repoUrl = document.getElementById('projectRepo').value.trim();
     const user = getCurrentUser();
 
     const newProject = {
         id: generateId(),
         name: name,
         description: description,
+        repo_url: repoUrl,
         created_by: user.username,
         created_at: new Date().toISOString()
     };

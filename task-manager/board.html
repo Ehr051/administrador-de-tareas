@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager - Tablero</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="board-page">
     <header class="board-header">
         <div class="board-header-left">
             <button class="btn-back" onclick="goToDashboard()">← Proyectos</button>
             <h1 id="projectTitle">Cargando...</h1>
+            <div id="repoContainer" class="repo-link-container" style="display: none;">
+                <span class="repo-url" id="repoUrlText"></span>
+                <button class="btn-copy-repo" onclick="copyCloneCommand()" title="Copiar git clone">📋 Clone</button>
+            </div>
         </div>
         <div class="user-info">
             <div class="user-badge">
@@ -92,6 +98,13 @@
                     <input type="text" id="taskTags" placeholder="ej: frontend, bug, urgente">
                 </div>
 
+                <div class="form-group">
+                    <label>Asignar a</label>
+                    <div id="assigneesList" class="checkbox-list small">
+                        <!-- Se cargará dinámicamente -->
+                    </div>
+                </div>
+
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeTaskModal()">Cancelar</button>
                     <button type="submit" class="btn-save">Guardar</button>
@@ -105,4 +118,5 @@
     <script src="js/auth.js"></script>
     <script src="js/board.js"></script>
 </body>
+
 </html>

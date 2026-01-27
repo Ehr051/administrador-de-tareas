@@ -70,30 +70,36 @@ async function loadProjects() {
     }
 }
 
+function filterProjects() {
+    renderProjects();
+}
+
 function renderProjects() {
     const grid = document.getElementById('projectsGrid');
     const user = getCurrentUser();
+    const searchTerm = document.getElementById('projectSearch')?.value.toLowerCase() || '';
 
-    if (projects.length === 0) {
+    // Filtrar localmente por búsqueda
+    const filteredProjects = projects.filter(p =>
+        p.name.toLowerCase().includes(searchTerm) ||
+        (p.description && p.description.toLowerCase().includes(searchTerm))
+    );
+
+    if (filteredProjects.length === 0) {
         grid.innerHTML = `
             <div class="empty-state">
-                <p>No tienes proyectos asignados</p>
-                ${user.role === 'admin' ? '<button class="btn-primary" onclick="openNewProjectModal()">Crear Primer Proyecto</button>' : ''}
+                <p>${searchTerm ? 'No se encontraron proyectos' : 'No tienes proyectos asignados'}</p>
+                ${(user.role === 'admin' && !searchTerm) ? '<button class="btn-primary" onclick="openNewProjectModal()">Crear Primer Proyecto</button>' : ''}
             </div>
         `;
         return;
     }
 
-    let html = projects.map(project => `
+    let html = filteredProjects.map(project => `
         <div class="project-card">
-            <div onclick="openProject('${project.id}')">
+            <div onclick="openProject('${project.id}')" class="project-card-link">
                 <h3>${escapeHtml(project.name)}</h3>
                 <p>${escapeHtml(project.description || 'Sin descripción')}</p>
-                <div class="project-stats">
-                    <span class="stat-pending"><strong>${project.tasks?.pending || 0}</strong></span>
-                    <span class="stat-progress"><strong>${project.tasks?.inProgress || 0}</strong></span>
-                    <span class="stat-done"><strong>${project.tasks?.completed || 0}</strong></span>
-                </div>
             </div>
             ${user.role === 'admin' ? `
                 <div class="project-actions">

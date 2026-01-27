@@ -22,7 +22,13 @@
 
     <div class="projects-section">
         <div class="section-header">
-            <h2>Selecciona un proyecto</h2>
+            <div class="header-left-group">
+                <h2>Proyectos</h2>
+                <div class="search-container">
+                    <input type="text" id="projectSearch" placeholder="Buscar proyecto..." oninput="filterProjects()">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
             <button class="btn-primary" onclick="openNewProjectModal()">+ Nuevo Proyecto</button>
         </div>
         <div id="projectsGrid" class="projects-grid">

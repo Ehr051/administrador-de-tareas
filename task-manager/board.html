@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Tablero</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="board-page">
+    <header class="board-header">
+        <div class="board-header-left">
+            <button class="btn-back" onclick="goToDashboard()">← Proyectos</button>
+            <h1 id="projectTitle">Cargando...</h1>
+        </div>
+        <div class="user-info">
+            <div class="user-badge">
+                <strong id="currentUserDisplay"></strong>
+            </div>
+            <button class="btn-logout" onclick="logout()">Salir</button>
+        </div>
+    </header>
+
+    <div class="board-container">
+        <!-- Columna Pendiente -->
+        <div class="kanban-column column-pending">
+            <div class="column-header">
+                <h2>Pendiente</h2>
+                <span class="count" id="countPending">0</span>
+            </div>
+            <div class="column-tasks" id="columnPending" data-status="pending">
+                <!-- Tasks se insertan aquí -->
+            </div>
+            <button class="btn-add-task" onclick="openTaskModal('pending')">+ Nueva Tarea</button>
+        </div>
+
+        <!-- Columna En Progreso -->
+        <div class="kanban-column column-progress">
+            <div class="column-header">
+                <h2>En Progreso</h2>
+                <span class="count" id="countProgress">0</span>
+            </div>
+            <div class="column-tasks" id="columnProgress" data-status="in_progress">
+                <!-- Tasks se insertan aquí -->
+            </div>
+            <button class="btn-add-task" onclick="openTaskModal('in_progress')">+ Nueva Tarea</button>
+        </div>
+
+        <!-- Columna Completado -->
+        <div class="kanban-column column-completed">
+            <div class="column-header">
+                <h2>Completado</h2>
+                <span class="count" id="countCompleted">0</span>
+            </div>
+            <div class="column-tasks" id="columnCompleted" data-status="completed">
+                <!-- Tasks se insertan aquí -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva/Editar Tarea -->
+    <div id="taskModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="taskModalTitle">Nueva Tarea</h2>
+                <button class="btn-close" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+                <input type="hidden" id="taskStatus">
+
+                <div class="form-group">
+                    <label for="taskTitle">Título</label>
+                    <input type="text" id="taskTitle" required placeholder="Título de la tarea">
+                </div>
+
+                <div class="form-group">
+                    <label for="taskNotes">Notas</label>
+                    <input type="text" id="taskNotes" placeholder="Notas adicionales">
+                </div>
+
+                <div class="form-group">
+                    <label for="taskPriority">Prioridad</label>
+                    <select id="taskPriority">
+                        <option value="baja">Baja</option>
+                        <option value="media" selected>Media</option>
+                        <option value="alta">Alta</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="taskTags">Tags (separados por coma)</label>
+                    <input type="text" id="taskTags" placeholder="ej: frontend, bug, urgente">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeTaskModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/board.js"></script>
+</body>
+</html>

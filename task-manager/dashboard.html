@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - Proyectos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+    <div class="dashboard-header">
+        <h1>Mis Proyectos</h1>
+        <div class="user-info">
+            <div class="user-badge">
+                Usuario: <strong id="currentUserDisplay"></strong>
+            </div>
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="projects-section">
+        <h2>Selecciona un proyecto</h2>
+        <div id="projectsGrid" class="projects-grid">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para nuevo proyecto -->
+    <div id="newProjectModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Nuevo Proyecto</h2>
+                <button class="btn-close" onclick="closeNewProjectModal()">&times;</button>
+            </div>
+            <form id="newProjectForm">
+                <div class="form-group">
+                    <label for="projectName">Nombre del proyecto</label>
+                    <input type="text" id="projectName" required placeholder="Ej: Mi App Web">
+                </div>
+                <div class="form-group">
+                    <label for="projectDesc">Descripción</label>
+                    <input type="text" id="projectDesc" placeholder="Descripción breve del proyecto">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeNewProjectModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Crear Proyecto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

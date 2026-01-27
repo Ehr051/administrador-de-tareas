@@ -13,12 +13,16 @@
             <div class="user-badge">
                 Usuario: <strong id="currentUserDisplay"></strong>
             </div>
+            <button class="btn-secondary" onclick="openUserModal()">Gestionar Usuarios</button>
             <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
         </div>
     </div>
 
     <div class="projects-section">
-        <h2>Selecciona un proyecto</h2>
+        <div class="section-header">
+            <h2>Selecciona un proyecto</h2>
+            <button class="btn-primary" onclick="openNewProjectModal()">+ Nuevo Proyecto</button>
+        </div>
         <div id="projectsGrid" class="projects-grid">
             <div class="loading">
                 <div class="spinner"></div>
@@ -49,6 +53,49 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal para Gestión de Usuarios -->
+    <div id="userModal" class="modal-overlay">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2>Gestión de Usuarios</h2>
+                <button class="btn-close" onclick="closeUserModal()">&times;</button>
+            </div>
+            <div class="user-management-content">
+                <form id="newUserForm" class="inline-form">
+                    <div class="form-group">
+                        <input type="text" id="newUsername" required placeholder="Usuario (MAYÚSCULAS)" style="text-transform: uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="newUserNameReal" required placeholder="Nombre Real">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="newUserPassword" required placeholder="Contraseña">
+                    </div>
+                    <button type="submit" class="btn-save">Agregar</button>
+                </form>
+                
+                <hr>
+                
+                <div class="users-list-container">
+                    <h3>Usuarios Registrados</h3>
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Nombre</th>
+                                <th>Contraseña</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Se cargará dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>

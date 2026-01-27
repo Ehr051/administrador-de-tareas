@@ -4,14 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const errorMessage = document.getElementById('errorMessage');
 
-    // Verificar si ya hay sesión activa
+    // Verificar si ya hay sesión activa (solo en la página de login)
     const currentUser = sessionStorage.getItem('currentUser');
-    if (currentUser) {
+    const isLoginPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
+    
+    if (currentUser && isLoginPage) {
         window.location.href = 'dashboard.html';
         return;
     }
 
-    loginForm.addEventListener('submit', async (e) => {
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+    
         e.preventDefault();
 
         const username = document.getElementById('username').value.trim().toUpperCase();

@@ -596,3 +596,122 @@ body {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+/* ===== New Components ===== */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-header h2 {
+    margin-bottom: 0 !important;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 2px dashed var(--border);
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    padding: 10px 20px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+/* User Management Content */
+.modal-lg {
+    max-width: 800px !important;
+}
+
+.user-management-content h3 {
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+.inline-form {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    background: var(--bg-dark);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.inline-form .form-group {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.users-table th {
+    text-align: left;
+    padding: 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+}
+
+.users-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.password-hidden {
+    cursor: pointer;
+    background: var(--bg-dark);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    opacity: 0.7;
+}
+
+.password-visible {
+    opacity: 1;
+    color: var(--success);
+    font-weight: bold;
+}

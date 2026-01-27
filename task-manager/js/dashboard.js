@@ -1,22 +1,7 @@
 // ===== Dashboard Module =====
 
-// Proyectos de ejemplo (se reemplazará con Supabase)
-let projects = [
-    {
-        id: 'bendito-cafe',
-        name: 'Bendito Café',
-        description: 'Sistema de gestión para cafetería',
-        tasks: { pending: 8, inProgress: 3, completed: 1 },
-        createdBy: 'EHR051'
-    },
-    {
-        id: 'task-manager',
-        name: 'Task Manager',
-        description: 'Administrador de tareas colaborativo',
-        tasks: { pending: 12, inProgress: 0, completed: 0 },
-        createdBy: 'EHR051'
-    }
-];
+let projects = [];
+let users = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     // Verificar autenticación
@@ -29,41 +14,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar proyectos
     loadProjects();
 
-    // Form de nuevo proyecto
+    // Event Listeners
     document.getElementById('newProjectForm').addEventListener('submit', handleNewProject);
+    document.getElementById('newUserForm').addEventListener('submit', handleNewUser);
 });
+
+// --- Projects Logic ---
 
 async function loadProjects() {
     const grid = document.getElementById('projectsGrid');
 
     try {
-        // Si Supabase está configurado, cargar de la DB
+        // Intentar cargar de Supabase
         if (isSupabaseConfigured() && supabaseClient) {
             const { data, error } = await supabaseClient
                 .from('projects')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (!error && data) {
-                projects = data;
-            }
+            if (error) throw error;
+            projects = data || [];
         } else {
-            // Cargar de localStorage si existe
+            // Fallback a localStorage
             const savedProjects = localStorage.getItem('taskManager_projects');
-            if (savedProjects) {
-                projects = JSON.parse(savedProjects);
-            }
+            projects = savedProjects ? JSON.parse(savedProjects) : [];
         }
 
         renderProjects();
     } catch (error) {
         console.error('Error loading projects:', error);
-        renderProjects();
+        // Mostrar error en el grid
+        grid.innerHTML = `<div class="empty-state">Error al cargar proyectos.</div>`;
     }
 }
 
 function renderProjects() {
     const grid = document.getElementById('projectsGrid');
+
+    if (projects.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <p>No hay proyectos activos</p>
+                <button class="btn-primary" onclick="openNewProjectModal()">Crea tu primer proyecto</button>
+            </div>
+        `;
+        return;
+    }
 
     let html = projects.map(project => `
         <div class="project-card" onclick="openProject('${project.id}')">
@@ -83,19 +79,10 @@ function renderProjects() {
         </div>
     `).join('');
 
-    // Botón de nuevo proyecto
-    html += `
-        <div class="project-card btn-new-project" onclick="openNewProjectModal()">
-            <span class="icon">+</span>
-            <span>Nuevo Proyecto</span>
-        </div>
-    `;
-
     grid.innerHTML = html;
 }
 
 function openProject(projectId) {
-    // Guardar proyecto seleccionado
     sessionStorage.setItem('currentProject', projectId);
     window.location.href = 'board.html';
 }
@@ -137,7 +124,6 @@ async function handleNewProject(e) {
             if (error) throw error;
             projects.unshift(data);
         } else {
-            // Guardar en localStorage
             projects.unshift(newProject);
             localStorage.setItem('taskManager_projects', JSON.stringify(projects));
         }
@@ -150,20 +136,124 @@ async function handleNewProject(e) {
     }
 }
 
-// ===== Utilities =====
+// --- User Management Logic ---
+
+async function openUserModal() {
+    document.getElementById('userModal').classList.add('show');
+    loadUsers();
+}
+
+function closeUserModal() {
+    document.getElementById('userModal').classList.remove('show');
+}
+
+async function loadUsers() {
+    const tableBody = document.getElementById('usersTableBody');
+    tableBody.innerHTML = '<tr><td colspan="3">Cargando usuarios...</td></tr>';
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from('users')
+                .select('*')
+                .order('username');
+
+            if (error) throw error;
+            users = data || [];
+        } else {
+            // Fallback a TEMP_USERS
+            users = Object.entries(TEMP_USERS).map(([username, data]) => ({
+                username,
+                name: data.name,
+                password: data.password
+            }));
+        }
+        renderUsers();
+    } catch (error) {
+        console.error('Error loading users:', error);
+        tableBody.innerHTML = '<tr><td colspan="3">Error al cargar usuarios.</td></tr>';
+    }
+}
+
+function renderUsers() {
+    const tableBody = document.getElementById('usersTableBody');
+
+    if (users.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="3">No hay otros usuarios.</td></tr>';
+        return;
+    }
+
+    tableBody.innerHTML = users.map(user => `
+        <tr>
+            <td><strong>${escapeHtml(user.username)}</strong></td>
+            <td>${escapeHtml(user.name)}</td>
+            <td>
+                <span class="password-hidden" onclick="togglePassword(this, '${escapeHtml(user.password)}')">••••••••</span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function handleNewUser(e) {
+    e.preventDefault();
+
+    const username = document.getElementById('newUsername').value.trim().toUpperCase();
+    const name = document.getElementById('newUserNameReal').value.trim();
+    const password = document.getElementById('newUserPassword').value.trim();
+
+    const newUser = {
+        username: username,
+        name: name,
+        password: password
+    };
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { error } = await supabaseClient
+                .from('users')
+                .insert([newUser]);
+
+            if (error) throw error;
+        } else {
+            alert('Supabase no configurado. Solo se puede agregar en modo real.');
+            return;
+        }
+
+        document.getElementById('newUserForm').reset();
+        loadUsers();
+    } catch (error) {
+        console.error('Error creating user:', error);
+        alert('Error al crear el usuario. Probablemente ya existe.');
+    }
+}
+
+function togglePassword(element, password) {
+    if (element.textContent === '••••••••') {
+        element.textContent = password;
+        element.classList.add('password-visible');
+    } else {
+        element.textContent = '••••••••';
+        element.classList.remove('password-visible');
+    }
+}
+
+// --- Utilities ---
+
 function generateId() {
     return 'proj_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 }
 
 function escapeHtml(text) {
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = text || '';
     return div.innerHTML;
 }
 
-// Cerrar modal con Escape
+// UI Helpers
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeNewProjectModal();
+        closeUserModal();
     }
 });
+

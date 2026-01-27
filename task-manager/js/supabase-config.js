@@ -1,26 +1,37 @@
 // ===== Supabase Configuration =====
-// IMPORTANTE: Reemplaza estos valores con los de tu proyecto Supabase
-const SUPABASE_URL = 'https://TU-PROYECTO.supabase.co';
-const SUPABASE_ANON_KEY = 'tu-anon-key-aqui';
+const SUPABASE_URL = 'https://buiwexyvwiizaumhouuw.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_d6WhsXaRCDCm_6Uc0iseKg_NyAZ7JQZ';
 
-// Usuarios temporales (mientras no esté Supabase configurado)
+// Usuarios temporales (fallback si Supabase falla)
 const TEMP_USERS = {
     'EHR051': { password: 'R4T4G4T4', name: 'EHR051' },
     'FGR134': { password: 'R4T4G4T4', name: 'FGR134' }
 };
 
-// Inicializar cliente Supabase (cuando esté configurado)
+// Inicializar cliente Supabase
 let supabase = null;
 
 function initSupabase() {
-    if (SUPABASE_URL !== 'https://TU-PROYECTO.supabase.co' && window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        return true;
+    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase inicializado correctamente');
+            return true;
+        } catch (e) {
+            console.error('Error inicializando Supabase:', e);
+            return false;
+        }
     }
+    console.warn('Supabase no disponible, usando localStorage');
     return false;
 }
 
 // Verificar si Supabase está configurado
 function isSupabaseConfigured() {
-    return SUPABASE_URL !== 'https://TU-PROYECTO.supabase.co';
+    return supabase !== null;
 }
+
+// Inicializar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    initSupabase();
+});

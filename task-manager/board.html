@@ -13,6 +13,7 @@
         <div class="board-header-left">
             <button class="btn-back" onclick="goToDashboard()">← Proyectos</button>
             <h1 id="projectTitle">Cargando...</h1>
+            <span class="btn-edit-project" onclick="openEditProjectModal()" title="Editar proyecto">✏️</span>
             <div id="repoContainer" class="repo-link-container" style="display: none;">
                 <span class="repo-url" id="repoUrlText"></span>
                 <button class="btn-copy-repo" onclick="copyCloneCommand()" title="Copiar git clone">📋 Clone</button>
@@ -108,6 +109,34 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="closeTaskModal()">Cancelar</button>
                     <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Proyecto -->
+    <div id="editProjectModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Editar Proyecto</h2>
+                <button class="btn-close" onclick="closeEditProjectModal()">&times;</button>
+            </div>
+            <form id="editProjectForm">
+                <div class="form-group">
+                    <label for="editProjectName">Nombre del Proyecto</label>
+                    <input type="text" id="editProjectName" required placeholder="Nombre del proyecto">
+                </div>
+                <div class="form-group">
+                    <label for="editProjectDesc">Descripción</label>
+                    <input type="text" id="editProjectDesc" placeholder="Descripción del proyecto">
+                </div>
+                <div class="form-group">
+                    <label for="editProjectRepo">URL del Repositorio (Git)</label>
+                    <input type="url" id="editProjectRepo" placeholder="https://github.com/usuario/repo.git">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditProjectModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar Cambios</button>
                 </div>
             </form>
         </div>

@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Form de tareas
     document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
+
+    // Form de edición de proyecto
+    document.getElementById('editProjectForm').addEventListener('submit', handleProjectUpdate);
 });
 
 async function loadProjectAndTasks(projectId) {
@@ -400,9 +403,71 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ===== Project Edit =====
+function openEditProjectModal() {
+    if (!currentProject) return;
+
+    document.getElementById('editProjectName').value = currentProject.name;
+    document.getElementById('editProjectDesc').value = currentProject.description || '';
+    document.getElementById('editProjectRepo').value = currentProject.repo_url || '';
+
+    document.getElementById('editProjectModal').classList.add('show');
+}
+
+function closeEditProjectModal() {
+    document.getElementById('editProjectModal').classList.remove('show');
+}
+
+async function handleProjectUpdate(e) {
+    e.preventDefault();
+    if (!currentProject) return;
+
+    const name = document.getElementById('editProjectName').value.trim();
+    const description = document.getElementById('editProjectDesc').value.trim();
+    const repoUrl = document.getElementById('editProjectRepo').value.trim();
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { error } = await supabaseClient
+                .from('projects')
+                .update({
+                    name: name,
+                    description: description,
+                    repo_url: repoUrl,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', currentProject.id);
+
+            if (error) throw error;
+        }
+
+        // Actualizar datos locales
+        currentProject.name = name;
+        currentProject.description = description;
+        currentProject.repo_url = repoUrl;
+
+        // Actualizar UI
+        document.getElementById('projectTitle').textContent = name;
+
+        const repoContainer = document.getElementById('repoContainer');
+        if (repoUrl) {
+            repoContainer.style.display = 'flex';
+            document.getElementById('repoUrlText').textContent = repoUrl;
+        } else {
+            repoContainer.style.display = 'none';
+        }
+
+        closeEditProjectModal();
+    } catch (error) {
+        console.error('Error updating project:', error);
+        alert('Error al actualizar el proyecto');
+    }
+}
+
 // Cerrar modal con Escape
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeTaskModal();
+        closeEditProjectModal();
     }
 });

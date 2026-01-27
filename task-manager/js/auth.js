@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verificar si ya hay sesión activa (solo en la página de login)
     const currentUser = sessionStorage.getItem('currentUser');
     const isLoginPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
-    
+
     if (currentUser && isLoginPage) {
         window.location.href = 'dashboard.html';
         return;
@@ -15,35 +15,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
-    
-        e.preventDefault();
 
-        const username = document.getElementById('username').value.trim().toUpperCase();
-        const password = document.getElementById('password').value;
+            e.preventDefault();
 
-        // Ocultar mensaje de error previo
-        errorMessage.classList.remove('show');
+            const username = document.getElementById('username').value.trim().toUpperCase();
+            const password = document.getElementById('password').value;
 
-        try {
-            const result = await authenticateUser(username, password);
+            // Ocultar mensaje de error previo
+            errorMessage.classList.remove('show');
 
-            if (result.success) {
-                // Guardar sesión
-                sessionStorage.setItem('currentUser', JSON.stringify({
-                    username: result.user.username,
-                    name: result.user.name
-                }));
+            try {
+                const result = await authenticateUser(username, password);
 
-                // Redirigir al dashboard
-                window.location.href = 'dashboard.html';
-            } else {
-                showError(result.message);
+                if (result.success) {
+                    // Guardar sesión
+                    sessionStorage.setItem('currentUser', JSON.stringify({
+                        username: result.user.username,
+                        name: result.user.name,
+                        role: result.user.role || 'user'
+                    }));
+
+                    // Redirigir al dashboard
+                    window.location.href = 'dashboard.html';
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                showError('Error de conexión. Intenta de nuevo.');
+                console.error('Auth error:', error);
             }
-        } catch (error) {
-            showError('Error de conexión. Intenta de nuevo.');
-            console.error('Auth error:', error);
-        }
-    });
+        });
+    }
 
     function showError(message) {
         errorMessage.textContent = message;
@@ -69,7 +71,11 @@ async function authenticateUser(username, password) {
 
             return {
                 success: true,
-                user: { username: data.username, name: data.name }
+                user: {
+                    username: data.username,
+                    name: data.name,
+                    role: data.role || 'user'
+                }
             };
         } catch (err) {
             console.error('Supabase auth error:', err);
@@ -78,6 +84,8 @@ async function authenticateUser(username, password) {
     }
 
     // Autenticación temporal (sin Supabase)
+    const isAdmin = (username === 'EHR051' || username === 'FGR143');
+    const userRole = isAdmin ? 'admin' : 'user';
     const user = TEMP_USERS[username];
 
     if (!user) {
@@ -90,7 +98,11 @@ async function authenticateUser(username, password) {
 
     return {
         success: true,
-        user: { username: username, name: user.name }
+        user: {
+            username: username,
+            name: user.name,
+            role: userRole
+        }
     };
 }
 

@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager - Proyectos</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="dashboard-page">
     <div class="dashboard-header">
         <h1>Mis Proyectos</h1>
         <div class="user-info">
-            <div class="user-badge">
+            <div class="user-badge" onclick="openProfileModal()" style="cursor: pointer;" title="Editar mi perfil">
                 Usuario: <strong id="currentUserDisplay"></strong>
             </div>
             <button class="btn-secondary" onclick="openUserModal()">Gestionar Usuarios</button>
@@ -64,7 +66,8 @@
             <div class="user-management-content">
                 <form id="newUserForm" class="inline-form">
                     <div class="form-group">
-                        <input type="text" id="newUsername" required placeholder="Usuario (MAYÚSCULAS)" style="text-transform: uppercase;">
+                        <input type="text" id="newUsername" required placeholder="Usuario (MAYÚSCULAS)"
+                            style="text-transform: uppercase;">
                     </div>
                     <div class="form-group">
                         <input type="text" id="newUserNameReal" required placeholder="Nombre Real">
@@ -74,9 +77,9 @@
                     </div>
                     <button type="submit" class="btn-save">Agregar</button>
                 </form>
-                
+
                 <hr>
-                
+
                 <div class="users-list-container">
                     <h3>Usuarios Registrados</h3>
                     <table class="users-table">
@@ -84,7 +87,9 @@
                             <tr>
                                 <th>Usuario</th>
                                 <th>Nombre</th>
+                                <th>Rol</th>
                                 <th>Contraseña</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
@@ -95,11 +100,59 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Modal para Acceso a Proyectos -->
+    <div id="accessModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Accesos: <span id="accessProjectName"></span></h2>
+                <button class="btn-close" onclick="closeAccessModal()">&times;</button>
+            </div>
+            <div class="access-content">
+                <p class="help-text">Selecciona los usuarios que pueden ver este proyecto:</p>
+                <div id="usersAccessList" class="checkbox-list">
+                    <!-- Checkboxes se cargarán aquí -->
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAccessModal()">Cerrar</button>
+                    <button type="button" class="btn-save" onclick="saveProjectAccess()">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Mi Perfil -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Mi Perfil</h2>
+                <button class="btn-close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="profileUsername">Usuario (no editable)</label>
+                    <input type="text" id="profileUsername" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="profileName">Nombre Real</label>
+                    <input type="text" id="profileName" required>
+                </div>
+                <div class="form-group">
+                    <label for="profilePassword">Nueva Contraseña</label>
+                    <input type="password" id="profilePassword" required placeholder="Ingresa nueva contraseña">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeProfileModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
+
 </html>

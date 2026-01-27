@@ -249,9 +249,17 @@ body {
     gap: 4px;
 }
 
-.stat-pending { color: var(--warning); }
-.stat-progress { color: var(--primary); }
-.stat-done { color: var(--success); }
+.stat-pending {
+    color: var(--warning);
+}
+
+.stat-progress {
+    color: var(--primary);
+}
+
+.stat-done {
+    color: var(--success);
+}
 
 .btn-new-project {
     background: transparent;
@@ -358,9 +366,17 @@ body {
     color: var(--text-secondary);
 }
 
-.column-pending .column-header { border-left: 3px solid var(--warning); }
-.column-progress .column-header { border-left: 3px solid var(--primary); }
-.column-completed .column-header { border-left: 3px solid var(--success); }
+.column-pending .column-header {
+    border-left: 3px solid var(--warning);
+}
+
+.column-progress .column-header {
+    border-left: 3px solid var(--primary);
+}
+
+.column-completed .column-header {
+    border-left: 3px solid var(--success);
+}
 
 .column-tasks {
     flex: 1;
@@ -414,9 +430,20 @@ body {
     text-transform: uppercase;
 }
 
-.priority-alta { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-.priority-media { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-.priority-baja { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+.priority-alta {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.priority-media {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.priority-baja {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--success);
+}
 
 .task-assignees {
     display: flex;
@@ -594,8 +621,11 @@ body {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
+
 /* ===== New Components ===== */
 .section-header {
     display: flex;
@@ -714,4 +744,134 @@ body {
     opacity: 1;
     color: var(--success);
     font-weight: bold;
+}
+
+/* Role Badges */
+.role-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.role-admin {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.role-user {
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+/* Table & Grid Actions */
+.table-actions,
+.project-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-icon {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.btn-icon:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.btn-icon-danger:hover {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.btn-small-outline {
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-small-outline:hover {
+    background: var(--bg-card-hover);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-small-danger {
+    padding: 6px 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-small-danger:hover {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+/* Access Control UI */
+.checkbox-list {
+    margin: 20px 0;
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--bg-dark);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.checkbox-item:last-child {
+    border-bottom: none;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.checkbox-item label {
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.help-text {
+    font-size: 13px;
+    color: var(--text-secondary);
 }

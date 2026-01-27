@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(100) NOT NULL,
     name VARCHAR(100),
+    role VARCHAR(20) DEFAULT 'user', -- 'admin' o 'user'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -22,6 +23,16 @@ CREATE TABLE IF NOT EXISTS projects (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Tabla de miembros del proyecto (quién ve qué)
+CREATE TABLE IF NOT EXISTS project_members (
+    id BIGSERIAL PRIMARY KEY,
+    project_id VARCHAR(50) REFERENCES projects(id) ON DELETE CASCADE,
+    username VARCHAR(50) REFERENCES users(username) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(project_id, username)
+);
+
 
 -- Tabla de tareas
 CREATE TABLE IF NOT EXISTS tasks (

@@ -38,8 +38,8 @@ async function loadProjects() {
 
     try {
         // Si Supabase está configurado, cargar de la DB
-        if (isSupabaseConfigured() && supabase) {
-            const { data, error } = await supabase
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { data, error } = await supabaseClient
                 .from('projects')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -127,8 +127,8 @@ async function handleNewProject(e) {
     };
 
     try {
-        if (isSupabaseConfigured() && supabase) {
-            const { data, error } = await supabase
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { data, error } = await supabaseClient
                 .from('projects')
                 .insert([newProject])
                 .select()

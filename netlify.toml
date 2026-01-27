@@ -1,7 +1,6 @@
 [build]
   publish = "task-manager"
 
-# Headers de seguridad
 [[headers]]
   for = "/*"
   [headers.values]

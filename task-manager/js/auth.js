@@ -50,9 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // Función de autenticación
 async function authenticateUser(username, password) {
     // Si Supabase está configurado, usar autenticación real
-    if (isSupabaseConfigured() && supabase) {
+    if (isSupabaseConfigured() && supabaseClient) {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('users')
                 .select('*')
                 .eq('username', username)

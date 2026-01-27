@@ -8,13 +8,13 @@ const TEMP_USERS = {
     'FGR134': { password: 'R4T4G4T4', name: 'FGR134' }
 };
 
-// Inicializar cliente Supabase
-let supabase = null;
+// Cliente Supabase (renombrado para evitar conflicto con el CDN)
+let supabaseClient = null;
 
 function initSupabase() {
-    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+    if (window.supabase && window.supabase.createClient) {
         try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             console.log('Supabase inicializado correctamente');
             return true;
         } catch (e) {
@@ -28,10 +28,13 @@ function initSupabase() {
 
 // Verificar si Supabase está configurado
 function isSupabaseConfigured() {
-    return supabase !== null;
+    return supabaseClient !== null;
+}
+
+// Getter para el cliente
+function getSupabase() {
+    return supabaseClient;
 }
 
 // Inicializar al cargar
-document.addEventListener('DOMContentLoaded', () => {
-    initSupabase();
-});
+initSupabase();

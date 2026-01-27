@@ -29,9 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadProjectAndTasks(projectId) {
     try {
-        if (isSupabaseConfigured() && supabase) {
+        if (isSupabaseConfigured() && supabaseClient) {
             // Cargar proyecto
-            const { data: projectData } = await supabase
+            const { data: projectData } = await supabaseClient
                 .from('projects')
                 .select('*')
                 .eq('id', projectId)
@@ -42,7 +42,7 @@ async function loadProjectAndTasks(projectId) {
             }
 
             // Cargar tareas
-            const { data: tasksData } = await supabase
+            const { data: tasksData } = await supabaseClient
                 .from('tasks')
                 .select('*')
                 .eq('project_id', projectId)
@@ -190,8 +190,8 @@ async function updateTaskStatus(taskId, newStatus) {
     task.status = newStatus;
 
     try {
-        if (isSupabaseConfigured() && supabase) {
-            const { error } = await supabase
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { error } = await supabaseClient
                 .from('tasks')
                 .update({ status: newStatus, updated_at: new Date().toISOString() })
                 .eq('id', taskId);
@@ -259,8 +259,8 @@ async function handleTaskSubmit(e) {
             if (index !== -1) {
                 tasks[index] = { ...tasks[index], ...taskData };
 
-                if (isSupabaseConfigured() && supabase) {
-                    await supabase
+                if (isSupabaseConfigured() && supabaseClient) {
+                    await supabaseClient
                         .from('tasks')
                         .update({ ...taskData, updated_at: new Date().toISOString() })
                         .eq('id', parseInt(taskId));
@@ -277,8 +277,8 @@ async function handleTaskSubmit(e) {
 
             tasks.push(newTask);
 
-            if (isSupabaseConfigured() && supabase) {
-                await supabase.from('tasks').insert([newTask]);
+            if (isSupabaseConfigured() && supabaseClient) {
+                await supabaseClient.from('tasks').insert([newTask]);
             }
         }
 

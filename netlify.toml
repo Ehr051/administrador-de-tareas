@@ -1,15 +1,6 @@
 [build]
   publish = "task-manager"
 
-[functions]
-  node_bundler = "esbuild"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  conditions = {Role = ["admin"]}
-
 # Headers de seguridad
 [[headers]]
   for = "/*"

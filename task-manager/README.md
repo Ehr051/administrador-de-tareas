@@ -4,10 +4,6 @@ Administrador de tareas colaborativo con tablero Kanban.
 
 ## Usuarios
 
-| Usuario | Contraseña |
-|---------|------------|
-| EHR051  | R4T4G4T4   |
-| FGR134  | R4T4G4T4   |
 
 ## Probar en Local
 

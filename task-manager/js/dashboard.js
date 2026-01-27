@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('currentUserDisplay').textContent = user.username + (user.role === 'admin' ? ' (Admin)' : '');
 
     // Mostrar botón de gestión solo a admins
-    const manageUsersBtn = document.querySelector('.btn-secondary');
+    const manageUsersBtn = document.getElementById('manageUsersBtn');
     if (manageUsersBtn) {
         manageUsersBtn.style.display = user.role === 'admin' ? 'block' : 'none';
     }
@@ -20,8 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // El botón de nuevo proyecto también podría estar restringido, pero el usuario pidió que solo ellos designen qué se ve.
     // Asumiremos que todos pueden crear, pero solo admins gestionan accesos y usuarios.
 
-    // Cargar proyectos
+    // Cargar proyectos y notificaciones
     loadProjects();
+    checkUnreadMessages();
 
     // Event Listeners
     document.getElementById('newProjectForm').addEventListener('submit', handleNewProject);
@@ -154,6 +155,12 @@ async function handleNewProject(e) {
                 .single();
 
             if (error) throw error;
+
+            // Auto-asignar al creador como miembro del proyecto
+            await supabaseClient
+                .from('project_members')
+                .insert([{ project_id: data.id, username: user.username }]);
+
             projects.unshift(data);
         } else {
             projects.unshift(newProject);
@@ -477,6 +484,165 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// --- Inbox & Messages Logic ---
+
+async function openInboxModal() {
+    document.getElementById('inboxModal').classList.add('show');
+    switchInboxTab('tasks');
+    loadUsersForMessaging();
+}
+
+function closeInboxModal() {
+    document.getElementById('inboxModal').classList.remove('show');
+}
+
+function switchInboxTab(tab) {
+    // UI toggle
+    document.querySelectorAll('#inboxModal .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#inboxModal .tab-content').forEach(content => content.classList.remove('active'));
+
+    if (tab === 'tasks') {
+        document.querySelector('#inboxModal .tab-btn:nth-child(1)').classList.add('active');
+        document.getElementById('inboxTasksContent').classList.add('active');
+        loadMyTasks();
+    } else {
+        document.querySelector('#inboxModal .tab-btn:nth-child(2)').classList.add('active');
+        document.getElementById('inboxMessagesContent').classList.add('active');
+        loadMessages();
+    }
+}
+
+async function loadMyTasks() {
+    const listContainer = document.getElementById('myTasksList');
+    const user = getCurrentUser();
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            // Obtener todas las tareas donde el usuario está en el array assigned_to
+            const { data, error } = await supabaseClient
+                .from('tasks')
+                .select('*, projects(name)')
+                .contains('assigned_to', [user.username]);
+
+            if (error) throw error;
+
+            if (data.length === 0) {
+                listContainer.innerHTML = '<p class="empty-text">No tienes tareas asignadas actualmente.</p>';
+                return;
+            }
+
+            listContainer.innerHTML = data.map(task => `
+                <div class="task-summary-card" onclick="openProject('${task.project_id}')" style="border-left: 5px solid ${getPriorityColor(task.priority)}">
+                    <div class="task-info">
+                        <span class="task-project">${escapeHtml(task.projects?.name)}</span>
+                        <h4>${escapeHtml(task.title)}</h4>
+                    </div>
+                    <span class="task-priority priority-${task.priority}">${task.priority}</span>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading my tasks:', error);
+        listContainer.innerHTML = 'Error al cargar tareas.';
+    }
+}
+
+function getPriorityColor(priority) {
+    switch (priority) {
+        case 'alta': return '#ef4444';
+        case 'media': return '#f59e0b';
+        case 'baja': return '#10b981';
+        default: return '#6366f1';
+    }
+}
+
+async function loadMessages() {
+    const listContainer = document.getElementById('messagesList');
+    const user = getCurrentUser();
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from('messages')
+                .select('*')
+                .or(`receiver.eq.${user.username},sender.eq.${user.username}`)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+
+            if (data.length === 0) {
+                listContainer.innerHTML = '<p class="empty-text">No tienes mensajes.</p>';
+                return;
+            }
+
+            listContainer.innerHTML = data.map(msg => `
+                <div class="message-item ${msg.sender === user.username ? 'sent' : ''}">
+                    <div class="message-meta">${msg.sender === user.username ? 'Tú' : msg.sender} • ${new Date(msg.created_at).toLocaleTimeString()}</div>
+                    <div class="message-content">${escapeHtml(msg.content)}</div>
+                </div>
+            `).join('');
+
+            // Auto scroll to bottom
+            listContainer.scrollTop = listContainer.scrollHeight;
+        }
+    } catch (error) {
+        console.error('Error loading messages:', error);
+    }
+}
+
+async function sendMessage() {
+    const receiver = document.getElementById('msgReceiver').value;
+    const content = document.getElementById('msgContent').value.trim();
+    const user = getCurrentUser();
+
+    if (!receiver || !content) {
+        alert('Selecciona un destinatario y escribe un mensaje');
+        return;
+    }
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { error } = await supabaseClient
+                .from('messages')
+                .insert([{
+                    sender: user.username,
+                    receiver: receiver,
+                    content: content
+                }]);
+
+            if (error) throw error;
+
+            document.getElementById('msgContent').value = '';
+            loadMessages();
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error al enviar mensaje');
+    }
+}
+
+async function loadUsersForMessaging() {
+    const select = document.getElementById('msgReceiver');
+    const user = getCurrentUser();
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from('users')
+                .select('username')
+                .neq('username', user.username);
+
+            if (error) throw error;
+
+            // Mantener la primera opción
+            select.innerHTML = '<option value="">Seleccionar destinatario...</option>' +
+                data.map(u => `<option value="${u.username}">${u.username}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading users for messaging:', error);
+    }
+}
+
 // UI Helpers
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -484,8 +650,36 @@ document.addEventListener('keydown', (e) => {
         closeUserModal();
         closeAccessModal();
         closeProfileModal();
+        closeInboxModal();
     }
 });
+
+async function checkUnreadMessages() {
+    const user = getCurrentUser();
+    const badge = document.getElementById('inboxCount');
+    if (!badge) return;
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { count, error } = await supabaseClient
+                .from('messages')
+                .select('*', { count: 'exact', head: true })
+                .eq('receiver', user.username)
+                .eq('is_read', false);
+
+            if (error) throw error;
+
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error checking unread messages:', error);
+    }
+}
 
 
 

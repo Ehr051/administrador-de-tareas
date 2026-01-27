@@ -259,13 +259,6 @@ async function loadProjectMembers() {
 
             if (error) throw error;
             members = data.map(m => m.username);
-
-            // Siempre incluir al admin y al creador por si acaso
-            if (!members.includes('EHR051')) members.push('EHR051');
-            if (!members.includes('FGR143')) members.push('FGR143');
-
-        } else {
-            members = ['EHR051', 'FGR134']; // Fallback
         }
 
         listContainer.innerHTML = members.map(username => `

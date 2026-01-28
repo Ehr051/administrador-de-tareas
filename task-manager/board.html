@@ -95,14 +95,40 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="taskTags">Tags (separados por coma)</label>
-                    <input type="text" id="taskTags" placeholder="ej: frontend, bug, urgente">
+                    <label for="taskDueDate">Fecha de Vencimiento</label>
+                    <input type="date" id="taskDueDate">
                 </div>
 
                 <div class="form-group">
                     <label>Asignar a</label>
                     <div id="assigneesList" class="checkbox-list small">
                         <!-- Se cargará dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Secciones Expandibles -->
+                <div class="task-advanced-sections">
+                    <div class="advanced-tabs">
+                        <button type="button" class="tab-btn active"
+                            onclick="switchTaskDetailTab('comments')">Comentarios</button>
+                        <button type="button" class="tab-btn"
+                            onclick="switchTaskDetailTab('history')">Historial</button>
+                    </div>
+
+                    <div id="taskCommentsSection" class="tab-content active">
+                        <div id="commentsList" class="comments-list">
+                            <!-- Comentarios -->
+                        </div>
+                        <div class="comment-input-group">
+                            <input type="text" id="newCommentInput" placeholder="Escribe un comentario...">
+                            <button type="button" class="btn-small" onclick="handleAddComment()">Enviar</button>
+                        </div>
+                    </div>
+
+                    <div id="taskHistorySection" class="tab-content">
+                        <div id="historyList" class="history-list">
+                            <!-- Historial -->
+                        </div>
                     </div>
                 </div>
 

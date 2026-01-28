@@ -147,6 +147,16 @@ function renderTaskCard(task) {
     const tags = (task.tags || []).map(t => `<span class="task-tag">${escapeHtml(t)}</span>`).join('');
     const assignees = (task.assigned_to || []).map(a => `<span class="assignee-badge">${escapeHtml(a)}</span>`).join('');
 
+    // Calcular clase de fecha
+    let dueDateHtml = '';
+    if (task.due_date) {
+        const today = new Date().toISOString().split('T')[0];
+        const isOverdue = task.due_date < today && task.status !== 'completed';
+        const isUrgent = task.due_date === today && task.status !== 'completed';
+        const dateClass = isOverdue ? 'overdue' : (isUrgent ? 'urgent' : '');
+        dueDateHtml = `<div class="due-date-badge ${dateClass}">📅 ${task.due_date}</div>`;
+    }
+
     return `
         <div class="task-card" draggable="true" data-task-id="${task.id}" ondblclick="editTask(${task.id})">
             <h4>${escapeHtml(task.title)}</h4>
@@ -154,6 +164,7 @@ function renderTaskCard(task) {
                 <span class="task-priority ${priorityClass}">${task.priority}</span>
                 <div class="task-assignees">${assignees}</div>
             </div>
+            ${dueDateHtml}
             ${tags ? `<div class="task-tags">${tags}</div>` : ''}
         </div>
     `;
@@ -220,6 +231,9 @@ async function updateTaskStatus(taskId, newStatus) {
                 .eq('id', taskId);
 
             if (error) throw error;
+
+            // Log activity
+            logActivity(currentProject.id, taskId, 'cambio_estado', { de: oldStatus, a: newStatus });
         } else {
             saveTasks();
         }
@@ -234,12 +248,143 @@ async function updateTaskStatus(taskId, newStatus) {
     }
 }
 
+// ===== Advanced Features Helpers =====
+
+function switchTaskDetailTab(tab) {
+    document.querySelectorAll('.task-advanced-sections .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.task-advanced-sections .tab-content').forEach(content => content.classList.remove('active'));
+
+    if (tab === 'comments') {
+        document.querySelector('.task-advanced-sections .tab-btn:nth-child(1)').classList.add('active');
+        document.getElementById('taskCommentsSection').classList.add('active');
+    } else {
+        document.querySelector('.task-advanced-sections .tab-btn:nth-child(2)').classList.add('active');
+        document.getElementById('taskHistorySection').classList.add('active');
+    }
+}
+
+async function loadComments(taskId) {
+    const list = document.getElementById('commentsList');
+    list.innerHTML = 'Cargando...';
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from('task_comments')
+                .select('*')
+                .eq('task_id', taskId)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+
+            if (data.length === 0) {
+                list.innerHTML = '<p class="empty-text small">Sin comentarios aún.</p>';
+                return;
+            }
+
+            list.innerHTML = data.map(c => `
+                <div class="comment-item">
+                    <div class="comment-meta">${escapeHtml(c.username)} • ${new Date(c.created_at).toLocaleString()}</div>
+                    <div class="comment-content">${escapeHtml(c.content)}</div>
+                </div>
+            `).join('');
+            list.scrollTop = list.scrollHeight;
+        }
+    } catch (error) {
+        console.error('Error loading comments:', error);
+    }
+}
+
+async function handleAddComment() {
+    const input = document.getElementById('newCommentInput');
+    const content = input.value.trim();
+    const taskId = document.getElementById('taskId').value;
+    const user = getCurrentUser();
+
+    if (!content || !taskId) return;
+
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { error } = await supabaseClient
+                .from('task_comments')
+                .insert([{
+                    task_id: parseInt(taskId),
+                    username: user.username,
+                    content: content
+                }]);
+
+            if (error) throw error;
+            input.value = '';
+            loadComments(taskId);
+            logActivity(currentProject.id, taskId, 'comentario', { extracto: content.substring(0, 30) });
+        }
+    } catch (error) {
+        console.error('Error adding comment:', error);
+    }
+}
+
+async function loadHistory(taskId) {
+    const list = document.getElementById('historyList');
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from('activity_log')
+                .select('*')
+                .eq('task_id', taskId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            list.innerHTML = data.map(log => `
+                <div class="history-item">
+                    <span class="history-meta">${new Date(log.created_at).toLocaleString()} - ${escapeHtml(log.username)}</span>
+                    <div>${formatAction(log.action, log.details)}</div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
+}
+
+function formatAction(action, details) {
+    switch (action) {
+        case 'creacion': return `Creó la tarea: "<strong>${escapeHtml(details.titulo)}</strong>"`;
+        case 'cambio_estado': return `Movió de <i>${details.de}</i> a <i>${details.a}</i>`;
+        case 'comentario': return `Comentó: "${escapeHtml(details.extracto)}..."`;
+        default: return action;
+    }
+}
+
+async function logActivity(projectId, taskId, action, details) {
+    const user = getCurrentUser();
+    try {
+        if (isSupabaseConfigured() && supabaseClient) {
+            await supabaseClient
+                .from('activity_log')
+                .insert([{
+                    project_id: projectId,
+                    task_id: taskId ? parseInt(taskId) : null,
+                    username: user.username,
+                    action: action,
+                    details: details
+                }]);
+        }
+    } catch (error) {
+        console.warn('Error logging activity:', error);
+    }
+}
+
 // ===== Task CRUD =====
 async function openTaskModal(status = 'pending') {
     document.getElementById('taskModalTitle').textContent = 'Nueva Tarea';
     document.getElementById('taskForm').reset();
     document.getElementById('taskId').value = '';
     document.getElementById('taskStatus').value = status;
+    document.getElementById('taskDueDate').value = '';
+
+    // Ocultar secciones avanzadas para nuevas tareas
+    document.querySelector('.task-advanced-sections').style.display = 'none';
 
     await loadProjectMembers();
 
@@ -287,6 +432,13 @@ async function editTask(taskId) {
     document.getElementById('taskNotes').value = task.notes || '';
     document.getElementById('taskPriority').value = task.priority || 'media';
     document.getElementById('taskTags').value = (task.tags || []).join(', ');
+    document.getElementById('taskDueDate').value = task.due_date || '';
+
+    // Mostrar secciones avanzadas
+    document.querySelector('.task-advanced-sections').style.display = 'block';
+    switchTaskDetailTab('comments');
+    loadComments(task.id);
+    loadHistory(task.id);
 
     await loadProjectMembers();
 
@@ -318,15 +470,19 @@ async function handleTaskSubmit(e) {
         status: document.getElementById('taskStatus').value,
         notes: document.getElementById('taskNotes').value.trim(),
         priority: document.getElementById('taskPriority').value,
+        due_date: document.getElementById('taskDueDate').value || null,
         tags: document.getElementById('taskTags').value.split(',').map(t => t.trim()).filter(t => t),
         assigned_to: assignedTo
     };
+
+
 
     try {
         if (taskId) {
             // Editar tarea existente
             const index = tasks.findIndex(t => t.id === parseInt(taskId));
             if (index !== -1) {
+                const oldTask = { ...tasks[index] };
                 tasks[index] = { ...tasks[index], ...taskData };
 
                 if (isSupabaseConfigured() && supabaseClient) {
@@ -334,6 +490,11 @@ async function handleTaskSubmit(e) {
                         .from('tasks')
                         .update({ ...taskData, updated_at: new Date().toISOString() })
                         .eq('id', parseInt(taskId));
+
+                    // Loggeamos si hubo cambios importantes
+                    if (oldTask.status !== taskData.status) {
+                        logActivity(currentProject.id, taskId, 'cambio_estado', { de: oldTask.status, a: taskData.status });
+                    }
                 }
             }
         } else {
@@ -348,7 +509,10 @@ async function handleTaskSubmit(e) {
             tasks.push(newTask);
 
             if (isSupabaseConfigured() && supabaseClient) {
-                await supabaseClient.from('tasks').insert([newTask]);
+                const { data, error } = await supabaseClient.from('tasks').insert([newTask]).select().single();
+                if (!error && data) {
+                    logActivity(currentProject.id, data.id, 'creacion', { titulo: data.title });
+                }
             }
         }
 

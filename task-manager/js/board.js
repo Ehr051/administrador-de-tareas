@@ -122,17 +122,40 @@ function getDefaultTasks() {
 }
 
 function renderTasks() {
-    const pending = tasks.filter(t => t.status === 'pending');
-    const inProgress = tasks.filter(t => t.status === 'in_progress');
-    const completed = tasks.filter(t => t.status === 'completed');
+    const searchQuery = document.getElementById('taskSearch')?.value.toLowerCase() || '';
 
-    document.getElementById('columnPending').innerHTML = pending.map(renderTaskCard).join('');
-    document.getElementById('columnProgress').innerHTML = inProgress.map(renderTaskCard).join('');
-    document.getElementById('columnCompleted').innerHTML = completed.map(renderTaskCard).join('');
+    const filteredTasks = tasks.filter(t =>
+        t.title.toLowerCase().includes(searchQuery) ||
+        (t.notes && t.notes.toLowerCase().includes(searchQuery)) ||
+        (t.tags && t.tags.some(tag => tag.toLowerCase().includes(searchQuery)))
+    );
+
+    const pending = filteredTasks.filter(t => t.status === 'pending');
+    const inProgress = filteredTasks.filter(t => t.status === 'in_progress');
+    const testing = filteredTasks.filter(t => t.status === 'testing');
+    const production = filteredTasks.filter(t => t.status === 'production');
+    const completed = filteredTasks.filter(t => t.status === 'completed');
+
+    const renderColumn = (tasks, containerId) => {
+        const container = document.getElementById(containerId);
+        if (tasks.length === 0) {
+            container.innerHTML = '<div class="empty-column-text">No hay tareas</div>';
+        } else {
+            container.innerHTML = tasks.map(renderTaskCard).join('');
+        }
+    };
+
+    renderColumn(pending, 'columnPending');
+    renderColumn(inProgress, 'columnProgress');
+    renderColumn(testing, 'columnTesting');
+    renderColumn(production, 'columnProduction');
+    renderColumn(completed, 'columnCompleted');
 
     // Actualizar contadores
     document.getElementById('countPending').textContent = pending.length;
     document.getElementById('countProgress').textContent = inProgress.length;
+    document.getElementById('countTesting').textContent = testing.length;
+    document.getElementById('countProduction').textContent = production.length;
     document.getElementById('countCompleted').textContent = completed.length;
 
     // Re-aplicar listeners de drag
@@ -140,6 +163,10 @@ function renderTasks() {
         card.addEventListener('dragstart', handleDragStart);
         card.addEventListener('dragend', handleDragEnd);
     });
+}
+
+function handleSearch() {
+    renderTasks();
 }
 
 function renderTaskCard(task) {
@@ -538,6 +565,8 @@ function updateProjectStats() {
     const stats = {
         pending: tasks.filter(t => t.status === 'pending').length,
         inProgress: tasks.filter(t => t.status === 'in_progress').length,
+        testing: tasks.filter(t => t.status === 'testing').length,
+        production: tasks.filter(t => t.status === 'production').length,
         completed: tasks.filter(t => t.status === 'completed').length
     };
 

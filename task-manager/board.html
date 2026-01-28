@@ -20,6 +20,9 @@
             </div>
         </div>
         <div class="user-info">
+            <div class="search-container">
+                <input type="text" id="taskSearch" placeholder="🔍 Buscar tareas..." oninput="handleSearch()">
+            </div>
             <div class="user-badge">
                 <strong id="currentUserDisplay"></strong>
             </div>
@@ -50,6 +53,30 @@
                 <!-- Tasks se insertan aquí -->
             </div>
             <button class="btn-add-task" onclick="openTaskModal('in_progress')">+ Nueva Tarea</button>
+        </div>
+
+        <!-- Columna Testing -->
+        <div class="kanban-column column-testing">
+            <div class="column-header">
+                <h2>Testing</h2>
+                <span class="count" id="countTesting">0</span>
+            </div>
+            <div class="column-tasks" id="columnTesting" data-status="testing">
+                <!-- Tasks se insertan aquí -->
+            </div>
+            <button class="btn-add-task" onclick="openTaskModal('testing')">+ Nueva Tarea</button>
+        </div>
+
+        <!-- Columna Listo Producción -->
+        <div class="kanban-column column-production">
+            <div class="column-header">
+                <h2>Listo Producción</h2>
+                <span class="count" id="countProduction">0</span>
+            </div>
+            <div class="column-tasks" id="columnProduction" data-status="production">
+                <!-- Tasks se insertan aquí -->
+            </div>
+            <button class="btn-add-task" onclick="openTaskModal('production')">+ Nueva Tarea</button>
         </div>
 
         <!-- Columna Completado -->
